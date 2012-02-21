@@ -14,6 +14,7 @@
  */
 void Controller::init()
 {
+    srand(time(0));
     cout<<"Welcome to whatever this is\n\n";
     _initializeWindow();
     GLEngine::init();

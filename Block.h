@@ -16,6 +16,7 @@ public:
     int row_lengths[2];
     pair<double, double> center;
     double area;
+    int layer_i, slice_i;
 
     vector<Block*> neighbors;
     void finalize();
@@ -24,6 +25,8 @@ public:
 
     void addPoint(int layer, pair<double, double>* point);
     void addNeighbor(Block* point);
+
+    void setCirclePosition(int layer_i, int slice_i);
 
 private:
     void _calculateCenter(pair<double, double>* result);

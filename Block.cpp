@@ -31,6 +31,7 @@ void Block::draw()
     glColor3f(color.x, color.y, color.z);
     glBegin(GL_LINE_LOOP);
     int c = 0;
+    glLineWidth(2);
     for(; c < 2; c++)
     {
         if(c % 2 == 0) {
@@ -48,24 +49,22 @@ void Block::draw()
     }
     glEnd();
 
-    // center point
-    glColor3f(1, 1, 1);
-    /*glPointSize(2);
-    glBegin(GL_POINTS);
-    glVertex2d(center.first, center.second);
-    glEnd();*/
-
     _drawNeighborLines();
 }
 
 void Block::_drawNeighborLines()
 {
+    glColor3f(color.x-.2, color.y-.2, color.z-.2);
+    glLineWidth(1);
+
+    float offset_x = 0;(rand()%100)/500.0;
+    float offset_y = 0;(rand()%100)/500.0;
     vector<Block*>::iterator it = neighbors.begin();
     glBegin(GL_LINES);
     for(;it != neighbors.end(); ++it)
     {
-        glVertex2d(center.first, center.second);
-        glVertex2d((*it)->center.first, (*it)->center.second);
+        glVertex2d(center.first+offset_x, center.second+offset_y);
+        glVertex2d((*it)->center.first+offset_x, (*it)->center.second+offset_y);
     }
     glEnd();
 }
@@ -73,9 +72,6 @@ void Block::_drawNeighborLines()
 void Block::finalize()
 {
     _calculateCenter(&center);
-    vector<Block*>::iterator it = neighbors.begin();
-    for(;it != neighbors.end(); ++it) cout << (*it) << "\n";
-    cout <<"\n";
 }
 
 void Block::_calculateCenter(pair<double, double>* result)
@@ -130,12 +126,11 @@ void Block::addPoint(int layer, pair<double, double>* point)
 
 void Block::addNeighbor(Block* n)
 {
-    //if(neighbors.empty() || neighbors.back() != n)
-    //{
-        neighbors.push_back(n);
-    //} 
+    neighbors.push_back(n);
+}
 
-    //vector<Block*>::iterator it = find (neighbors.begin(), neighbors.end(), n);
-
-    //if(it == neighbors.end()) neighbors.push_back(n);
+void Block::setCirclePosition(int layer_i, int slice_i)
+{
+    this->layer_i = layer_i;
+    this->slice_i = slice_i;
 }

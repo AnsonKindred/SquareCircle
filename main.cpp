@@ -1,4 +1,3 @@
-// Memory leak debugging stuff
 #include "Base.h"
 #include "Controller.h"
 
