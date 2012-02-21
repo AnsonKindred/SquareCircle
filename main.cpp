@@ -1,8 +1,10 @@
 #include "Base.h"
 #include "Controller.h"
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
+	glutInit(&argc, argv);
     atexit(Controller::dispose);
     Controller::init();
+	return 1;
 }

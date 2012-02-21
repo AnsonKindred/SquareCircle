@@ -1,3 +1,4 @@
+#ifdef OS_WINDOWS
 #define CRTDBG_MAP_ALLOC
 #define CRTDBG_MAP_ALLOC_NEW
 #include <stdlib.h>
@@ -5,6 +6,7 @@
  
 // The most important line
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#endif
 
 #include "Block.h"
 
@@ -54,7 +56,8 @@ void Block::draw()
 
 void Block::_drawNeighborLines()
 {
-    glColor3f(color.x-.2, color.y-.2, color.z-.2);
+	glColor3f(1, 1, 1);
+    //glColor3f(color.x-.2, color.y-.2, color.z-.2);
     glLineWidth(1);
 
     float offset_x = 0;(rand()%100)/500.0;

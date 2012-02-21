@@ -2,7 +2,7 @@
 #define BLOCK_HEADER
 
 #include "VectorUtil.h"
-#include <gl/GL.h>
+#include <GL/gl.h>
 
 class Block
 {

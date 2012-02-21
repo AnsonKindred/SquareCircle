@@ -31,12 +31,12 @@ public:
     template <class T>
     static void normalize3(triple<T>* v)
     {
-        float total = mag(v);
+        float total = mag3(v);
 		if(total != 0)
 		{
 			v->x /= total;
 			v->y /= total;
-            v->z /= total;
+			v->z /= total;
 		}
     }
 
@@ -51,9 +51,9 @@ public:
     template <class T>
     static float angleBetween3(const triple<T>& v1, const triple<T>& v2)
     {
-        float dot = VectorUtil::dot(v1, v2);
-        float v1Mag = VectorUtil::mag(v1);
-        float v2Mag = VectorUtil::mag(v2);
+        float dot = dot3(v1, v2);
+        float v1Mag = mag3(v1);
+        float v2Mag = mag3(v2);
         return (float) acos( dot / (v1Mag * v2Mag) );
     }
 
@@ -74,13 +74,13 @@ public:
 	{
 		if(mag != 0)
 		{
-            float total = VectorUtil::mag(triple);
+			float total = mag3(v);
 			if(total != 0)
 			{
 				total *= mag;
 				v->x /= total;
 				v->y /= total;
-                v->z /= total;
+				v->z /= total;
 			}
 		}
 	}
@@ -90,10 +90,8 @@ public:
 	{
 		v->x *= vm;
 		v->y *= vm;
-        v->z *= vm;
+		v->z *= vm;
 	}
-
-    //--
 
 };
 #endif

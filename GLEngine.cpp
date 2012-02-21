@@ -1,3 +1,4 @@
+#ifdef OS_WINDOWS
 #define CRTDBG_MAP_ALLOC
 #define CRTDBG_MAP_ALLOC_NEW
 #include <stdlib.h>
@@ -5,10 +6,11 @@
  
 // The most important line
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#endif
 
 #include "GLEngine.h"
 
-long GLEngine::startTime = NULL;
+long GLEngine::startTime = 0;
 
 /**
  * GLEngine
@@ -68,9 +70,8 @@ void GLEngine::display()
 	glFlush();
 }
 
-void GLEngine::reshape(int width, int height) 
+void GLEngine::reshape(int width, int height)
 {
-		
     float aspect = (float) width / height;
         
     glMatrixMode(GL_PROJECTION);

@@ -1,3 +1,4 @@
+#ifdef OS_WINDOWS
 #define CRTDBG_MAP_ALLOC
 #define CRTDBG_MAP_ALLOC_NEW
 #include <stdlib.h>
@@ -5,6 +6,7 @@
  
 // The most important line
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#endif
 
 #include "SquareCircle.h"
 
@@ -45,7 +47,7 @@ void SquareCircle::init(int numLayers, float blockSize)
 
     _constructCircle();
     
-    cout << "done: "<<(clock()-start_time)<<"ms";
+    cout << "done: "<<(clock()-start_time)<<"ms\n";
     //exit(0);
     myBoxesID = glGenLists(1);
     glNewList(myBoxesID, GL_COMPILE);

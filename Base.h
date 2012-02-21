@@ -5,7 +5,8 @@
 #ifndef BASE_HEADER
 #define BASE_HEADER
 
-#define OS_WINDOWS
+//#define OS_WINDOWS
+#define OS_LINUX
 
 // Hide the console window
 //#pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )

@@ -3,7 +3,7 @@
 
 #include "Base.h"
 #include "Block.h"
-#include <gl/GL.h>
+#include <GL/gl.h>
 
 class SquareCircle
 {
