@@ -9,6 +9,7 @@ class Block
 public:
 
     Block();
+    Block(int layer, int slice);
     ~Block();
 
     triple<float> color;
@@ -16,7 +17,10 @@ public:
     int row_lengths[2];
     pair<double, double> center;
     double area;
-    int layer_i, slice_i;
+    int layer, slice;
+    bool isLastBlockInRow;
+    bool isFirstBlockInRow;
+    bool isOnLastLayer;
 
     vector<Block*> neighbors;
     void finalize();
@@ -26,12 +30,11 @@ public:
     void addPoint(int layer, pair<double, double>* point);
     void addNeighbor(Block* point);
 
-    void setCirclePosition(int layer_i, int slice_i);
+    void setCirclePosition(int layer, int slice);
 
 private:
     void _calculateCenter(pair<double, double>* result);
     float _calculateArea();
-
     void _drawNeighborLines();
 
 };

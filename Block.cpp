@@ -1,14 +1,21 @@
-#ifdef OS_WINDOWS
-#define CRTDBG_MAP_ALLOC
-#define CRTDBG_MAP_ALLOC_NEW
-#include <stdlib.h>
-#include <crtdbg.h>
- 
-// The most important line
-#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
-#endif
-
 #include "Block.h"
+
+Block::Block(int layer, int slice) : color(0, 0, 0)
+{
+    color.x = (rand()%256)/256.f;
+    color.y = (rand()%256)/256.f;
+    color.z = (rand()%256)/256.f;
+    points[0] = NULL;
+    points[1] = NULL;
+    row_lengths[0] = 0;
+    row_lengths[1] = 0;
+    area = 0;
+    isLastBlockInRow = false;
+    isFirstBlockInRow = false;
+    isOnLastLayer = false;
+    this->layer = layer;
+    this->slice = slice;
+}
 
 Block::Block() : color(0, 0, 0)
 {
@@ -20,10 +27,25 @@ Block::Block() : color(0, 0, 0)
     row_lengths[0] = 0;
     row_lengths[1] = 0;
     area = 0;
+    isLastBlockInRow = false;
+    isFirstBlockInRow = false;
+    isOnLastLayer = false;
 }
 
 Block::~Block()
 {
+    int l = row_lengths[0];
+    if(!isLastBlockInRow) l--;
+    for(int i = 0; i < l; i++) {
+        delete points[0][i];
+    }
+    if(isOnLastLayer) {
+        int l = row_lengths[1];
+        if(!isLastBlockInRow) l--;
+        for(int i = 0; i < l; i++) {
+            delete points[1][i];
+        }
+    }
     delete[] points[0];
     delete[] points[1];
 }
@@ -33,7 +55,7 @@ void Block::draw()
     glColor3f(color.x, color.y, color.z);
     glBegin(GL_LINE_LOOP);
     int c = 0;
-    glLineWidth(2);
+    glLineWidth(1);
     for(; c < 2; c++)
     {
         if(c % 2 == 0) {
@@ -60,8 +82,8 @@ void Block::_drawNeighborLines()
     //glColor3f(color.x-.2, color.y-.2, color.z-.2);
     glLineWidth(1);
 
-    float offset_x = 0;(rand()%100)/500.0;
-    float offset_y = 0;(rand()%100)/500.0;
+    float offset_x = 0;//(rand()%100)/500.0;
+    float offset_y = 0;//(rand()%100)/500.0;
     vector<Block*>::iterator it = neighbors.begin();
     glBegin(GL_LINES);
     for(;it != neighbors.end(); ++it)
@@ -115,16 +137,25 @@ float Block::_calculateArea()
 
 void Block::addPoint(int layer, pair<double, double>* point)
 {
-    if(row_lengths[layer] == 0) {
+    points[layer][row_lengths[layer]] = point;
+    row_lengths[layer]++;
+    
+    /*if(row_lengths[layer] == 0) {
         points[layer][row_lengths[layer]] = point;
         row_lengths[layer]++;
     }
-    else if(points[layer][row_lengths[layer]-1]->first != point->first || 
-        points[layer][row_lengths[layer]-1]->second != point->second) 
+    else 
     {
+        int l = row_lengths[layer];
+        for(int i = 0; i < l; i++) {
+            if(point == points[layer][i]) {
+                cout << "tried to add dupe point " << point->first<< " " << point->second << "\n";
+                return;
+            }
+        }
         points[layer][row_lengths[layer]] = point;
         row_lengths[layer]++;
-    }
+    }*/
 }
 
 void Block::addNeighbor(Block* n)
@@ -132,8 +163,8 @@ void Block::addNeighbor(Block* n)
     neighbors.push_back(n);
 }
 
-void Block::setCirclePosition(int layer_i, int slice_i)
+void Block::setCirclePosition(int layer, int slice)
 {
-    this->layer_i = layer_i;
-    this->slice_i = slice_i;
+    this->layer = layer;
+    this->slice = slice;
 }

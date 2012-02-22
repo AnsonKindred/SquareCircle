@@ -5,8 +5,8 @@
 #ifndef BASE_HEADER
 #define BASE_HEADER
 
-//#define OS_WINDOWS
-#define OS_LINUX
+#define OS_WINDOWS
+//#define OS_LINUX
 
 // Hide the console window
 //#pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
@@ -28,7 +28,15 @@
 #include "VectorUtil.h"
 
 #ifdef OS_WINDOWS
+    #include <glut.h>
     #include <windows.h>
+    #define CRTDBG_MAP_ALLOC
+    #define CRTDBG_MAP_ALLOC_NEW
+    #include <stdlib.h>
+    #include <crtdbg.h>
+    #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#else
+    #include <GL/glut.h>
 #endif
 
 #define TAU 6.283185307179586

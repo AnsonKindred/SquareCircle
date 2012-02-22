@@ -1,13 +1,3 @@
-#ifdef OS_WINDOWS
-#define CRTDBG_MAP_ALLOC
-#define CRTDBG_MAP_ALLOC_NEW
-#include <stdlib.h>
-#include <crtdbg.h>
- 
-// The most important line
-#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
-#endif
-
 #include "GLEngine.h"
 
 long GLEngine::startTime = 0;

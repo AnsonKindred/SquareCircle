@@ -2,7 +2,6 @@
 #define GL_ENGINE
 
 #include "Base.h"
-#include <GL/glut.h>
 #include "SquareCircle.h"
 
 /**

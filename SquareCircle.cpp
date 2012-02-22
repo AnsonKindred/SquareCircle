@@ -1,19 +1,8 @@
-#ifdef OS_WINDOWS
-#define CRTDBG_MAP_ALLOC
-#define CRTDBG_MAP_ALLOC_NEW
-#include <stdlib.h>
-#include <crtdbg.h>
- 
-// The most important line
-#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
-#endif
-
 #include "SquareCircle.h"
 
 int SquareCircle::myNumLayers = 0;
 float SquareCircle::myBlockSize = 0;
 int SquareCircle::myBoxesID = 0;
-pair<double, double>** SquareCircle::points;
 Block** SquareCircle::blocks;
     
 pair<double, double>** SquareCircle::secondaries, **SquareCircle::last_secondaries;
@@ -21,13 +10,11 @@ pair<double, double>** SquareCircle::primaries, **SquareCircle::last_primaries;
 pair<double, double>** SquareCircle::temp;
 
 void SquareCircle::dispose()
-{
-    for(int l = 0; l < myNumLayers; l++)
-    {
-        delete[] points[l];
-    }
-    delete[] points;
-    
+{   
+    // Fixes a memory leak due to some funkyness with how c++ handles arrays
+    // Apparently breaks in release mode..wtf
+    //blocks[0][0].~Block();
+
     for(int l = 0; l < myNumLayers-1; l++)
     {
         delete[] blocks[l];
@@ -66,15 +53,10 @@ void SquareCircle::_constructCircle()
     int last_primary_c = 0;
     int last_secondary_c = 0;
 
+    Block* block = NULL;
+
     // Our goal is to fill this array
     blocks = new Block*[myNumLayers-1];
-
-    // Points holds exactly one pointer to each point so the memory can be freed later. Other than that it's actually not even necessary...
-    // I think if I could free the memory from the blocks themselves correctly it would be unnecessary
-    points = new pair<double, double>*[myNumLayers];
-
-    // First layer, just a single origin point
-    points[0] = new pair<double, double>[1];
 
     // The all important arrays that allow this magic to work. 
     // Primaries store only the primary points for each layer. Secondaries store points calculated at the current layer but with 
@@ -84,11 +66,11 @@ void SquareCircle::_constructCircle()
     last_secondaries = new pair<double, double>*[next_num_slices+1];
 
     // First layer, edge case, every point is at the origin
-    last_primaries[last_primary_c++] = &points[0][0];
+    last_primaries[last_primary_c++] = new pair<double, double>(0, 0);
     // secondary points for the next layer, also all at the origin, but they need to be in this list for referencing on the next layer
-    for(int i = 0; i <= next_num_slices; i++) last_secondaries[last_secondary_c++] = &points[0][0];
+    for(int i = 0; i <= next_num_slices; i++) last_secondaries[last_secondary_c++] = new pair<double, double>(0, 0);
     // last primary point
-    last_primaries[last_primary_c++] = &points[0][0];
+    last_primaries[last_primary_c++] = new pair<double, double>(0, 0);
 
     last_num_slices = num_slices;
     num_slices = next_num_slices;
@@ -105,33 +87,31 @@ void SquareCircle::_constructCircle()
 
         float radius = layer*myBlockSize;
 
-        last_primary_c = 0;
+        last_primary_c = 1;
         last_secondary_c = 0;
         primary_c = 0;
         secondary_c = 0;
-        int point_c = 0;
 
-        // Start a new layer of points and blocks
-        points[layer] = new pair<double, double>[num_slices/4+next_num_slices/4+2];
+        // Start a new layer of blocks
         if(layer < myNumLayers -1) {
             // Gotta allocate one block layer ahead so that they can be linked to as neighbors
             blocks[block_layer+1] = new Block[next_num_slices/4];
         }
 
-        // First slice of each layer, edge case
-        points[layer][point_c].first = 0.f;
-        points[layer][point_c].second = radius;
-
         // It's also always a primary and secondary
-        primaries[primary_c] = &points[layer][point_c];
-        secondaries[secondary_c] = &points[layer][point_c];
-        point_c++; primary_c++; secondary_c++;
+        primaries[primary_c] = new pair<double, double>(0, radius);
+        secondaries[secondary_c] = primaries[primary_c];
+        primary_c++; secondary_c++;
 
         double last_slice_f = 0;
         for(int slice = 1; slice <= num_slices/4; slice++)
         {
-            double slice_f = (double)slice/num_slices;
+            double slice_f  = (double)slice/num_slices;
             int block_slice = slice-1;
+
+            int underlap_slice_i_end = (int)(slice_f*last_num_slices);
+            int overlap_slice_i_end  = (int)(slice_f*next_num_slices);
+            int num_neighbors = 2;
 
             // Let's build a block
             Block* block = &blocks[block_layer][block_slice];
@@ -143,9 +123,6 @@ void SquareCircle::_constructCircle()
                 block->addNeighbor(&blocks[block_layer][block_slice-1]);
                 blocks[block_layer][block_slice-1].addNeighbor(block);
             }
-
-            // This is the index of the last slice in the previous layer that is before this slice
-            int underlap_slice_i_end = (int)(slice_f*last_num_slices);
 
             // Each box is made of two rows of points, one made from the points from the previous layer, and one made from this layer's primaries.
             // Here we initilize the first row. The array size is the number of new intermediates + 2 for the end points
@@ -163,14 +140,11 @@ void SquareCircle::_constructCircle()
                     blocks[block_layer-1][last_primary_c-1].addNeighbor(block);
                 }
             }
-
+            
             // Add the last point in the back row of the box
             block->addPoint(0, last_secondaries[last_secondary_c]);
 
             //-----------------------------------------------------------------
-
-            // This is the index of the last slice in the next layer that is before this slice
-            int overlap_slice_i_end = (int)(slice_f*next_num_slices);
             
             // Initilize the second row of the block
             block->points[1] = new pair<double, double>*[overlap_slice_i_end-secondary_c+1+2];
@@ -182,12 +156,12 @@ void SquareCircle::_constructCircle()
             while(secondary_c <= overlap_slice_i_end)
             {
                 // Gotta calculate these points, yay circle math
-                points[layer][point_c].first = (double)(radius*sin(overlap_slice_f*TAU));
-                points[layer][point_c].second = (double)(radius*cos(overlap_slice_f*TAU));
+                pair<double, double>* temp = new pair<double, double>(0, 0);
+                temp->first = (double)(radius*sin(overlap_slice_f*TAU));
+                temp->second = (double)(radius*cos(overlap_slice_f*TAU));
                 
-                secondaries[secondary_c] = &points[layer][point_c];
-
-                block->addPoint(1, &points[layer][point_c]);
+                secondaries[secondary_c] = temp;
+                block->addPoint(1, temp);
 
                 if(layer < myNumLayers-1 && secondary_c > 0 && slice_f != overlap_slice_f) {
                     // Same deal with the neighbors
@@ -195,24 +169,30 @@ void SquareCircle::_constructCircle()
                     blocks[block_layer+1][secondary_c-1].addNeighbor(block);
                 }
                 
-                point_c++;
                 secondary_c++;
                 overlap_slice_f = (double)secondary_c/next_num_slices;
             }
             
             // And here is the actual primary point
-            points[layer][point_c].first = (double)(radius*sin(slice_f*TAU));
-            points[layer][point_c].second = (float)(radius*cos(slice_f*TAU));
+            pair<double, double>* temp = new pair<double, double>(0, 0);
+            temp->first = (double)(radius*sin(slice_f*TAU));
+            temp->second = (float)(radius*cos(slice_f*TAU));
 
-            primaries[primary_c] = &points[layer][point_c];
-            block->addPoint(1, &points[layer][point_c]);
-
+            primaries[primary_c] = temp;
+            block->addPoint(1, temp);
             block->finalize();
 
-            point_c++;
+            if(slice == num_slices/4) {
+                block->isLastBlockInRow = true;
+            }
+            if(layer == myNumLayers - 1) {
+                block->isOnLastLayer = true;
+            }
+
             primary_c++;
             last_slice_f = slice_f;
         }
+
         last_num_slices = num_slices;
         num_slices = next_num_slices;
 

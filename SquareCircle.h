@@ -14,7 +14,6 @@ private:
     static float myBlockSize;
     static const int MAP_RES = 1000;
 
-    static pair<double, double>** points;
     static Block** blocks;
 
     static pair<double, double>** secondaries, **last_secondaries;
