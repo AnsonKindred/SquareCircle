@@ -7,12 +7,12 @@
 void Controller::init()
 {
     srand(time(0));
-    cout<<"Welcome to whatever this is\n\n";
     _initializeWindow();
     GLEngine::init();
-    
-    SquareCircle::init(100, .2);
     glutIdleFunc(Controller::tick);
+
+    cout<<"Welcome to whatever this is\n\n";
+    SquareCircle::init(10, 1);
 
 	glutMainLoop();
 }
